@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d5c4b">
+<title>WafaPlus - Sharia Financing</title>
+<style>
+  :root {
+    --primary: #0d5c4b;
+    --primary-dark: #094538;
+    --primary-soft: #e6f1ee;
+    --accent: #c9a227;
+    --bg: #f4f7f6;
+    --surface: #ffffff;
+    --text: #172620;
+    --muted: #64736e;
+    --border: #dde6e3;
+    --danger: #b3261e;
+    --danger-soft: #fdecea;
+    --success: #0d7a4a;
+    --success-soft: #e3f5ec;
+    --warning-soft: #fff5d9;
+    --warning-text: #7a5a00;
+    --info-soft: #e4effc;
+    --info-text: #0a4a8a;
+    --radius: 16px;
+    --shadow: 0 1px 2px rgba(16,40,33,.05), 0 4px 16px rgba(16,40,33,.06);
+  }
+
+  * { box-sizing: border-box; }
+  [hidden], .hidden { display: none !important; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    font-size: 16px;
+    min-height: 100vh;
+  }
+
+  /* ---------- Header ---------- */
+  .topbar {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--primary);
+    color: #fff;
+    padding: env(safe-area-inset-top, 0) 0 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,.12);
+  }
+  .topbar-inner {
+    max-width: 760px; margin: 0 auto;
+    padding: 14px 16px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .brand-mark {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--accent); color: var(--primary-dark);
+    display: grid; place-items: center; font-weight: 800; font-size: 18px; flex-shrink: 0;
+  }
+  .brand-name { font-weight: 700; font-size: 17px; line-height: 1.1; }
+  .brand-sub { font-size: 12px; opacity: .8; }
+  .account { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .account-email {
+    font-size: 13px; opacity: .9;
+    max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .btn-logout {
+    background: rgba(255,255,255,.14); color: #fff;
+    border: 1px solid rgba(255,255,255,.3);
+    padding: 7px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+
+  /* ---------- Stepper ---------- */
+  .stepper {
+    max-width: 760px; margin: 0 auto;
+    padding: 18px 16px 4px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+  }
+  .step { text-align: center; font-size: 12px; color: var(--muted); font-weight: 600; }
+  .step-dot {
+    height: 6px; border-radius: 999px; background: var(--border); margin-bottom: 6px;
+    transition: background .2s;
+  }
+  .step.done .step-dot, .step.active .step-dot { background: var(--primary); }
+  .step.active { color: var(--primary); }
+
+  /* ---------- Layout ---------- */
+  main { max-width: 760px; margin: 0 auto; padding: 16px 16px 48px; }
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 22px;
+    margin-bottom: 16px;
+  }
+  .card-narrow { max-width: 440px; margin: 32px auto; }
+  h2 { margin: 0 0 6px; font-size: 22px; color: var(--text); letter-spacing: -.01em; }
+  h3 { margin: 22px 0 10px; font-size: 15px; color: var(--primary); text-transform: uppercase; letter-spacing: .04em; }
+  .lead { color: var(--muted); margin: 0 0 18px; font-size: 15px; }
+  .muted { color: var(--muted); font-size: 14px; }
+  .section-title { font-size: 13px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: .05em; margin: 18px 0 10px; }
+
+  /* ---------- Forms ---------- */
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  .field .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  input, select {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 14px;
+    font-size: 16px; /* prevents iOS zoom on focus */
+    font-family: inherit;
+    color: var(--text);
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    transition: border-color .15s, box-shadow .15s;
+    -webkit-appearance: none; appearance: none;
+  }
+  select {
+    background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+    background-position: calc(100% - 20px) 55%, calc(100% - 15px) 55%;
+    background-size: 5px 5px; background-repeat: no-repeat; padding-right: 36px;
+  }
+  input:focus, select:focus {
+    outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(13,92,75,.14);
+  }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; gap: 0; } }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 48px; padding: 12px 20px;
+    border: 0; border-radius: 12px;
+    font-size: 16px; font-weight: 600; font-family: inherit;
+    cursor: pointer; text-decoration: none;
+    transition: background .15s, transform .05s;
+  }
+  .btn:active { transform: scale(.98); }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-secondary { background: var(--primary-soft); color: var(--primary); }
+  .btn-secondary:hover { background: #d3e8e2; }
+  .btn-ghost { background: transparent; color: var(--primary); padding: 10px 6px; min-height: 44px; }
+  .btn-small { min-height: 40px; padding: 8px 16px; font-size: 14px; border-radius: 10px; }
+  .btn-block { width: 100%; }
+  .btn:disabled { background: #b9cdc7; color: #fff; cursor: not-allowed; transform: none; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+  .actions .btn { flex: 1 1 auto; }
+  @media (max-width: 600px) {
+    .actions { flex-direction: column-reverse; }
+    .actions .btn { width: 100%; }
+  }
+
+  /* ---------- Alerts ---------- */
+  .alert { border-radius: 12px; padding: 12px 14px; font-size: 14px; margin-top: 12px; }
+  .alert-error { background: var(--danger-soft); color: var(--danger); }
+  .alert-success { background: var(--success-soft); color: var(--success); }
+  .alert-info { background: var(--info-soft); color: var(--info-text); }
+
+  /* ---------- Badges ---------- */
+  .badge {
+    display: inline-block; padding: 4px 11px; border-radius: 999px;
+    font-size: 12px; font-weight: 700; letter-spacing: .02em;
+  }
+  .b-processing { background: var(--warning-soft); color: var(--warning-text); }
+  .b-plan { background: var(--info-soft); color: var(--info-text); }
+  .b-signed { background: var(--success-soft); color: var(--success); }
+
+  /* ---------- Login ---------- */
+  .login-wrap { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 24px 16px; }
+  .login-brand { text-align: center; margin-bottom: 20px; }
+  .login-brand .brand-mark { width: 56px; height: 56px; font-size: 26px; border-radius: 16px; margin: 0 auto 10px; }
+  .login-brand h1 { margin: 0; font-size: 22px; color: var(--primary); }
+  .login-brand p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+  .link-row { text-align: center; margin-top: 14px; }
+
+  /* ---------- Home ---------- */
+  .home-hero {
+    background: linear-gradient(135deg, var(--primary) 0%, #137a64 100%);
+    color: #fff; border-radius: var(--radius); padding: 24px; margin-bottom: 16px;
+  }
+  .home-hero h2 { color: #fff; margin-bottom: 8px; }
+  .home-hero p { margin: 0 0 18px; opacity: .92; font-size: 15px; }
+  .home-hero .btn-primary { background: #fff; color: var(--primary); }
+  .home-hero .btn-primary:hover { background: #f0f7f5; }
+  .home-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .home-action {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 18px; border: 0; text-align: left; cursor: pointer; font-family: inherit; color: var(--text);
+  }
+  .home-action strong { display: block; font-size: 15px; margin-bottom: 4px; color: var(--primary); }
+  .home-action span { font-size: 13px; color: var(--muted); }
+  @media (max-width: 600px) { .home-actions { grid-template-columns: 1fr; } }
+
+  /* ---------- Plans ---------- */
+  .summary-bar {
+    display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center;
+    background: var(--primary-soft); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px;
+    font-size: 14px;
+  }
+  .summary-bar b { color: var(--primary); }
+  .plan {
+    border: 1.5px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; background: #fff;
+  }
+  .plan:not(.plan-off):hover { border-color: var(--primary); }
+  .plan-off { opacity: .6; background: #fafafa; }
+  .plan-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+  .plan-tenure { font-size: 17px; font-weight: 700; }
+  .plan-emi { text-align: right; font-size: 20px; font-weight: 800; color: var(--primary); white-space: nowrap; }
+  .plan-emi span { display: block; font-size: 12px; font-weight: 600; color: var(--muted); }
+  .plan-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; margin: 0 0 14px; }
+  .plan-meta dt { font-size: 12px; color: var(--muted); }
+  .plan-meta dd { margin: 0; font-size: 15px; font-weight: 600; }
+  .plan .reason { font-size: 13px; color: var(--danger); margin: 0; }
+  .plan.plan-selected { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(13,92,75,.12); }
+
+  /* ---------- Agreement ---------- */
+  .summary-list { display: grid; gap: 0; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+  .summary-item { display: flex; justify-content: space-between; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 15px; background: #fff; }
+  .summary-item:last-child { border-bottom: 0; }
+  .summary-item.total { background: var(--primary-soft); font-weight: 700; color: var(--primary); }
+  .summary-item span:first-child { color: var(--muted); }
+  .agreement-text {
+    background: #fbfcfc; border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px; font-size: 14px; line-height: 1.7; max-height: 300px; overflow-y: auto;
+  }
+  .agreement-text p { margin: 0 0 10px; }
+  .check {
+    display: flex; gap: 12px; align-items: flex-start; margin-top: 18px;
+    font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  .check input { width: 22px; height: 22px; min-height: 22px; margin: 2px 0 0; accent-color: var(--primary); flex-shrink: 0; }
+
+  /* ---------- Confirm ---------- */
+  .confirm-icon {
+    width: 64px; height: 64px; border-radius: 50%; background: var(--success-soft); color: var(--success);
+    display: grid; place-items: center; font-size: 32px; margin: 8px auto 14px;
+  }
+  .center { text-align: center; }
+
+  /* ---------- Applications ---------- */
+  .app-item {
+    border: 1.5px solid var(--border); border-radius: 14px; padding: 14px 16px; margin-top: 12px;
+    display: flex; justify-content: space-between; align-items: center; gap: 12px; background: #fff;
+  }
+  .app-title { font-weight: 700; margin-bottom: 2px; }
+  .app-meta { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+  @media (max-width: 480px) {
+    .app-item { flex-direction: column; align-items: stretch; }
+    .app-item .btn { width: 100%; }
+    .account-email { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar" id="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark">W</div>
+      <div>
+        <div class="brand-name">WafaPlus</div>
+        <div class="brand-sub">Sharia Financing · OMR</div>
+      </div>
+    </div>
+    <div class="account hidden" id="userbar">
+      <span class="account-email" id="userEmail"></span>
+      <button class="btn-logout" onclick="doLogout()">Log out</button>
+    </div>
+  </div>
+</header>
+
+<nav class="stepper hidden" id="stepper" aria-label="Progress">
+  <div class="step" data-step="0"><div class="step-dot"></div>Quotation</div>
+  <div class="step" data-step="1"><div class="step-dot"></div>Financing</div>
+  <div class="step" data-step="2"><div class="step-dot"></div>Agreement</div>
+  <div class="step" data-step="3"><div class="step-dot"></div>Done</div>
+</nav>
+
+<main>
+
+<!-- LOADING -->
+<section id="loading" class="card card-narrow center">
+  <p class="muted">Loading...</p>
+</section>
+
+<!-- LOGIN / REGISTER -->
+<section id="login" class="login-wrap hidden">
+  <div style="width:100%;max-width:420px;margin:0 auto">
+    <div class="login-brand">
+      <div class="brand-mark">W</div>
+      <h1>WafaPlus</h1>
+      <p>Sharia-compliant instalment financing</p>
+    </div>
+    <div class="card" style="margin:0">
+      <h2 id="authTitle">Sign in</h2>
+      <p class="lead" id="authLead">Welcome back. Enter your details to continue.</p>
+      <div class="field">
+        <label for="authEmail">Email</label>
+        <input id="authEmail" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com">
+      </div>
+      <div class="field">
+        <label for="authPassword">Password</label>
+        <input id="authPassword" type="password" autocomplete="current-password" placeholder="••••••••">
+      </div>
+      <div class="field hidden" id="confirmWrap">
+        <label for="authPassword2">Confirm password</label>
+        <input id="authPassword2" type="password" autocomplete="new-password" placeholder="••••••••">
+      </div>
+      <p id="authError" class="alert alert-error hidden"></p>
+      <p id="authInfo" class="alert alert-info hidden"></p>
+      <button id="authBtn" class="btn btn-primary btn-block" style="margin-top:6px" onclick="doAuth()">Sign in</button>
+      <div class="link-row">
+        <button class="btn btn-ghost" id="toggleBtn" onclick="toggleAuthMode()">New here? Create an account</button>
+      </div>
+      <div class="link-row">
+        <button class="btn btn-ghost" onclick="doReset()">Forgot password?</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOME -->
+<section id="home" class="hidden">
+  <div class="home-hero">
+    <h2>Finance your electronics</h2>
+    <p>Request a quotation and receive Sharia-compliant instalment options, tailored to your income.</p>
+    <button class="btn btn-primary" onclick="show('quoteForm')">Start a new quotation</button>
+  </div>
+  <div class="home-actions">
+    <button class="home-action" onclick="openMyApplications()">
+      <strong>My applications</strong>
+      <span>Track status and continue where you left off</span>
+    </button>
+    <button class="home-action" onclick="show('quoteForm')">
+      <strong>Quotation request</strong>
+      <span>Item details, price, and your income</span>
+    </button>
+  </div>
+</section>
+
+<!-- QUOTATION FORM -->
+<section id="quoteForm" class="card hidden">
+  <h2>Quotation request</h2>
+  <p class="lead">Tell us about the item and your details. Maximum price is 50,000 OMR.</p>
+
+  <div class="section-title">Personal details</div>
+  <div class="grid-2">
+    <div class="field"><label for="customerId">Civil ID</label><input id="customerId" maxlength="20" inputmode="numeric"></div>
+    <div class="field"><label for="phone">Phone number</label><input id="phone" inputmode="tel" placeholder="+968 9XXXXXXX"></div>
+  </div>
+  <div class="grid-2">
+    <div class="field"><label for="name">Full name</label><input id="name" autocomplete="name"></div>
+    <div class="field"><label for="age">Age</label><input id="age" type="number" inputmode="numeric" min="18" max="60"></div>
+  </div>
+  <div class="field"><label for="income">Monthly income (OMR)</label><input id="income" type="number" inputmode="decimal" step="0.001"></div>
+
+  <div class="section-title">Item details</div>
+  <div class="grid-2">
+    <div class="field">
+      <label for="item">Category</label>
+      <select id="item">
+        <option>Mobile Phone</option><option>Laptop</option><option>Television</option>
+        <option>Refrigerator</option><option>Washing Machine</option><option>Air Conditioner</option><option>Other</option>
+      </select>
+    </div>
+    <div class="field"><label for="product">Product name</label><input id="product" placeholder="e.g. Samsung"></div>
+  </div>
+  <div class="grid-2">
+    <div class="field"><label for="model">Model</label><input id="model"></div>
+    <div class="field"><label for="price">Original price (OMR)</label><input id="price" type="number" inputmode="decimal" step="0.001"><div class="hint">Maximum 50,000 OMR</div></div>
+  </div>
+  <div class="field"><label for="downPayment">Downpayment (OMR)</label><input id="downPayment" type="number" inputmode="decimal" step="0.001"><div class="hint">Minimum 20% of the original price</div></div>
+  <div class="field"><label for="description">Description (optional)</label><input id="description"></div>
+
+  <p id="formError" class="alert alert-error hidden"></p>
+  <div class="actions">
+    <button class="btn btn-primary" onclick="submitQuotation()">Submit quotation</button>
+    <button class="btn btn-secondary" onclick="show('home')">Cancel</button>
+  </div>
+</section>
+
+<!-- PLANS -->
+<section id="plans" class="card hidden">
+  <h2>Financing options</h2>
+  <p class="lead">Choose the plan that fits your budget.</p>
+  <div class="summary-bar">
+    <span>Status: <span class="badge b-processing">Processing</span></span>
+    <span class="muted" id="plansSummary"></span>
+  </div>
+  <div id="plansTable"></div>
+  <p class="muted" style="margin-top:14px">Conditions: minimum 20% downpayment · age at end of tenure ≤ 60 · EMI ≤ 60% of monthly income.</p>
+  <div class="actions">
+    <button class="btn btn-secondary" onclick="show('home')">Back to home</button>
+  </div>
+</section>
+
+<!-- AGREEMENT -->
+<section id="agreement" class="card hidden">
+  <h2>Financing agreement</h2>
+  <p class="lead">Review the terms below, then sign to confirm.</p>
+  <div id="selectedPlan"></div>
+  <h3>Terms</h3>
+  <div class="agreement-text" id="agreementText"></div>
+  <label class="check">
+    <input type="checkbox" id="acceptBox" onchange="document.getElementById('acceptBtn').disabled = !this.checked">
+    <span>I have read and accept this Murabaha financing agreement.</span>
+  </label>
+  <div class="actions">
+    <button id="acceptBtn" class="btn btn-primary" disabled onclick="acceptAgreement()">Sign and accept</button>
+    <button class="btn btn-secondary" onclick="show('plans')">Back to options</button>
+  </div>
+</section>
+
+<!-- CONFIRMATION -->
+<section id="confirm" class="card hidden center">
+  <div class="confirm-icon">✓</div>
+  <h2>Submission successful</h2>
+  <p class="lead" id="confirmMsg" style="margin-top:8px"></p>
+  <p class="muted">Reference: <b id="refNo"></b></p>
+  <div class="actions">
+    <button class="btn btn-primary" onclick="show('home')">Back to home</button>
+    <button class="btn btn-secondary" onclick="openMyApplications()">View my applications</button>
+  </div>
+</section>
+
+<!-- MY APPLICATIONS -->
+<section id="myApps" class="card hidden">
+  <h2>My applications</h2>
+  <p class="lead">Your quotations and financing requests.</p>
+  <p id="appsError" class="alert alert-error hidden"></p>
+  <div id="appsList"></div>
+  <div class="actions">
+    <button class="btn btn-secondary" onclick="show('home')">Back to home</button>
+  </div>
+</section>
+
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, collection, addDoc, query, where, getDocs, getDoc, doc, updateDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  getAuth, onAuthStateChanged, createUserWithEmailAndPassword,
+  signInWithEmailAndPassword, signOut, sendPasswordResetEmail
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+/* ---------- Firebase ---------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyCsTRKWhX50RYFRRlza0HH7RB4CFM-_Yzw",
+  authDomain: "wafaplus.firebaseapp.com",
+  projectId: "wafaplus",
+  storageBucket: "wafaplus.firebasestorage.app",
+  messagingSenderId: "672480451424",
+  appId: "1:672480451424:web:f8420f8c12aa03cb1f9c05",
+  measurementId: "G-XKLW92TDFW"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const APPS = collection(db, "applications");
+
+/* ---------- Policy settings (change here) ---------- */
+const POLICY = {
+  maxFinance: 50000,
+  minDownPct: 20,
+  maxAge: 60,
+  maxDbr: 0.60,
+  // tenure in months -> annual profit rate (Murabaha markup, flat, agreed upfront)
+  tenures: { 3: 5, 6: 6, 12: 9 }
+};
+
+/* ---------- Helpers ---------- */
+const $ = id => document.getElementById(id);
+const r3 = n => Math.round(n * 1000) / 1000;
+const omr = n => Number(n).toFixed(3) + " OMR";
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const SECTIONS = ["loading","login","home","quoteForm","plans","agreement","confirm","myApps"];
+const STEP_OF = { quoteForm: 0, plans: 1, agreement: 2, confirm: 3 };
+
+const show = id => {
+  SECTIONS.forEach(s => $(s).classList.toggle("hidden", s !== id));
+  const step = STEP_OF[id];
+  $("stepper").classList.toggle("hidden", step === undefined);
+  if (step !== undefined) {
+    document.querySelectorAll(".step").forEach(el => {
+      const n = Number(el.dataset.step);
+      el.classList.toggle("done", n < step);
+      el.classList.toggle("active", n === step);
+    });
+  }
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+window.show = show;
+
+const setAlert = (el, msg) => {
+  el.textContent = msg || "";
+  el.classList.toggle("hidden", !msg);
+};
+
+let currentUser = null;
+let currentId = null, currentApp = null, selectedIndex = null;
+
+/* ---------- Authentication ---------- */
+let authMode = "login"; // "login" or "register"
+
+window.toggleAuthMode = () => {
+  authMode = authMode === "login" ? "register" : "login";
+  const reg = authMode === "register";
+  $("authTitle").textContent = reg ? "Create account" : "Sign in";
+  $("authLead").textContent = reg ? "Create an account to request financing." : "Welcome back. Enter your details to continue.";
+  $("authBtn").textContent = reg ? "Create account" : "Sign in";
+  $("toggleBtn").textContent = reg ? "Already have an account? Sign in" : "New here? Create an account";
+  $("confirmWrap").classList.toggle("hidden", !reg);
+  $("authPassword").autocomplete = reg ? "new-password" : "current-password";
+  setAlert($("authError"), ""); setAlert($("authInfo"), "");
+};
+
+const authErrorText = code => ({
+  "auth/invalid-email": "Please enter a valid email address.",
+  "auth/missing-password": "Please enter your password.",
+  "auth/invalid-credential": "Incorrect email or password.",
+  "auth/user-not-found": "Incorrect email or password.",
+  "auth/wrong-password": "Incorrect email or password.",
+  "auth/email-already-in-use": "An account with this email already exists.",
+  "auth/weak-password": "Password must be at least 6 characters.",
+  "auth/too-many-requests": "Too many attempts. Please wait a few minutes and try again.",
+  "auth/network-request-failed": "Network error. Check your connection."
+}[code] || "Something went wrong. Please try again.");
+
+window.doAuth = async () => {
+  setAlert($("authError"), ""); setAlert($("authInfo"), "");
+  const email = $("authEmail").value.trim();
+  const password = $("authPassword").value;
+
+  if (!email || !password) return setAlert($("authError"), "Enter your email and password.");
+
+  try {
+    if (authMode === "register") {
+      if (password !== $("authPassword2").value) return setAlert($("authError"), "Passwords do not match.");
+      await createUserWithEmailAndPassword(auth, email, password);
+    } else {
+      await signInWithEmailAndPassword(auth, email, password);
+    }
+  } catch (e) {
+    setAlert($("authError"), authErrorText(e.code));
+  }
+};
+
+window.doReset = async () => {
+  setAlert($("authError"), ""); setAlert($("authInfo"), "");
+  const email = $("authEmail").value.trim();
+  if (!email) return setAlert($("authError"), "Enter your email above, then tap Forgot password.");
+  try {
+    await sendPasswordResetEmail(auth, email);
+    setAlert($("authInfo"), "If an account exists for this email, a reset link has been sent.");
+  } catch (e) {
+    setAlert($("authError"), authErrorText(e.code));
+  }
+};
+
+window.doLogout = async () => {
+  await signOut(auth);
+};
+
+// Runs on initial load and whenever sign-in state changes
+onAuthStateChanged(auth, user => {
+  currentUser = user;
+  if (user) {
+    $("userEmail").textContent = user.email;
+    $("userbar").classList.remove("hidden");
+    show("home");
+  } else {
+    $("userbar").classList.add("hidden");
+    $("userEmail").textContent = "";
+    currentId = null; currentApp = null; selectedIndex = null;
+    $("authPassword").value = ""; $("authPassword2").value = "";
+    show("login");
+  }
+});
+
+/* ---------- Sharia financing calculation ---------- */
+function buildPlans(price, downPayment, age, income) {
+  const plans = [];
+  const dp = Math.round(downPayment / price * 10000) / 100; // percent, for display only
+  const down = r3(downPayment);
+  const financed = r3(price - down);
+
+  for (const [m, ratePct] of Object.entries(POLICY.tenures)) {
+    const months = Number(m);
+    const profit = r3(financed * (ratePct / 100) * (months / 12)); // flat profit
+    const total = r3(financed + profit);
+    const emi = r3(total / months);
+
+    const reasons = [];
+    if (age + months / 12 > POLICY.maxAge) reasons.push("Age at end of tenure exceeds 60");
+    if (emi > income * POLICY.maxDbr) reasons.push("EMI exceeds 60% of monthly income");
+
+    plans.push({ dp, months, down, financed, profit, total, emi, eligible: reasons.length === 0, reasons });
+  }
+  return plans.sort((a, b) => a.months - b.months);
+}
+
+function renderPlans(app, appId) {
+  const eligible = app.plans.filter(p => p.eligible).length;
+  $("plansSummary").innerHTML = `Ref <b>${esc(appId)}</b> · ${eligible} option(s) available`;
+
+  if (eligible === 0) {
+    $("plansTable").innerHTML = `<p class="alert alert-error">No plan meets the conditions for this application. Please contact WafaPlus for review.</p>`;
+    return;
+  }
+
+  const selected = app.selectedPlan;
+  $("plansTable").innerHTML = app.plans.map((p, i) => {
+    const isSelected = selected && selected.months === p.months;
+    return `<div class="plan ${p.eligible ? "" : "plan-off"} ${isSelected ? "plan-selected" : ""}">
+      <div class="plan-head">
+        <div>
+          <div class="plan-tenure">${p.months} months</div>
+          <div class="muted">Downpayment ${omr(p.down)}</div>
+        </div>
+        <div class="plan-emi">${omr(p.emi)}<span>per month</span></div>
+      </div>
+      <dl class="plan-meta">
+        <div><dt>Downpayment</dt><dd>${omr(p.down)}</dd></div>
+        <div><dt>Financed</dt><dd>${omr(p.financed)}</dd></div>
+        <div><dt>Profit</dt><dd>${omr(p.profit)}</dd></div>
+        <div><dt>Total payable</dt><dd>${omr(p.total)}</dd></div>
+      </dl>
+      ${p.eligible
+        ? `<button class="btn btn-primary btn-block" onclick="selectPlan(${i})">${isSelected ? "Continue with this plan" : "Select this plan"}</button>`
+        : `<p class="reason">${esc(p.reasons.join(" · "))}</p>`}
+    </div>`;
+  }).join("");
+}
+
+/* ---------- Quotation submission ---------- */
+window.submitQuotation = async () => {
+  setAlert($("formError"), "");
+  if (!currentUser) return setAlert($("formError"), "Please sign in first.");
+
+  const v = {
+    customerId: $("customerId").value.trim(),
+    phone: $("phone").value.trim(),
+    name: $("name").value.trim(),
+    age: Number($("age").value),
+    income: Number($("income").value),
+    price: Number($("price").value),
+    downPayment: Number($("downPayment").value),
+    item: $("item").value,
+    product: $("product").value.trim(),
+    model: $("model").value.trim(),
+    description: $("description").value.trim()
+  };
+
+  if (!v.customerId || !v.phone || !v.name || !v.product) return setAlert($("formError"), "Please fill all required fields.");
+  if (v.age < 18 || v.age > 60) return setAlert($("formError"), "Applicant age must be between 18 and 60.");
+  if (!(v.income > 0)) return setAlert($("formError"), "Enter a valid monthly income.");
+  if (!(v.price > 0) || v.price > POLICY.maxFinance) return setAlert($("formError"), `Price must be between 0 and ${POLICY.maxFinance} OMR.`);
+  if (!(v.downPayment > 0)) return setAlert($("formError"), "Enter the downpayment amount.");
+  if (v.downPayment >= v.price) return setAlert($("formError"), "Downpayment must be less than the original price.");
+  if (v.downPayment < v.price * POLICY.minDownPct / 100) return setAlert($("formError"), `Downpayment must be at least 20% of the price (${omr(v.price * POLICY.minDownPct / 100)}).`);
+
+  const plans = buildPlans(v.price, v.downPayment, v.age, v.income);
+  try {
+    const ref = await addDoc(APPS, {
+      ...v, uid: currentUser.uid, userEmail: currentUser.email,
+      status: "processing", plans,
+      selectedPlan: null, agreementAccepted: false,
+      createdAt: serverTimestamp()
+    });
+    currentId = ref.id;
+    currentApp = { ...v, plans, status: "processing", selectedPlan: null };
+    show("plans");
+    renderPlans(currentApp, currentId);
+  } catch (e) {
+    setAlert($("formError"), "Could not save quotation: " + e.message);
+  }
+};
+
+/* ---------- Select plan & agreement ---------- */
+window.selectPlan = async i => {
+  selectedIndex = i;
+  const p = currentApp.plans[i];
+  await updateDoc(doc(db, "applications", currentId), {
+    status: "plan_selected", selectedPlan: p, planSelectedAt: serverTimestamp()
+  });
+  currentApp.status = "plan_selected";
+  currentApp.selectedPlan = p;
+  openAgreement(p);
+};
+
+function openAgreement(p) {
+  $("selectedPlan").innerHTML = `
+    <div class="summary-list">
+      <div class="summary-item"><span>Item</span><span>${esc(currentApp.product)} ${esc(currentApp.model)}</span></div>
+      <div class="summary-item"><span>Original price</span><span>${omr(currentApp.price)}</span></div>
+      <div class="summary-item"><span>Downpayment</span><span>${omr(p.down)}</span></div>
+      <div class="summary-item"><span>Financed amount</span><span>${omr(p.financed)}</span></div>
+      <div class="summary-item"><span>Fixed profit</span><span>${omr(p.profit)}</span></div>
+      <div class="summary-item"><span>Total payable</span><span>${omr(p.total)}</span></div>
+      <div class="summary-item"><span>Tenure</span><span>${p.months} months</span></div>
+      <div class="summary-item total"><span>Monthly instalment</span><span>${omr(p.emi)}</span></div>
+    </div>`;
+  $("agreementText").innerHTML = `
+    <p><b>MURABAHA FINANCING AGREEMENT</b></p>
+    <p>1. The Company purchases the item described above and sells it to the Customer at the Total Payable amount, which includes a fixed, pre-agreed profit margin.</p>
+    <p>2. The profit amount is fixed at contract signing and will not change or compound due to delay in payment.</p>
+    <p>3. The Customer pays the downpayment at signing, and the monthly instalment on the agreed date for the full tenure.</p>
+    <p>4. Ownership of the item remains with the Company until the Total Payable is fully settled.</p>
+    <p>5. No interest (riba) is charged. Late payments are not subject to interest; any charity amount collected on late payment is donated to charity and not retained as income.</p>
+    <p>6. The Customer confirms that the information provided in this application is true and complete.</p>`;
+  $("acceptBox").checked = false;
+  $("acceptBtn").disabled = true;
+  show("agreement");
+}
+window.openAgreement = openAgreement;
+
+/* ---------- Accept agreement ---------- */
+window.acceptAgreement = async () => {
+  const p = currentApp.selectedPlan;
+  await updateDoc(doc(db, "applications", currentId), {
+    status: "agreement_signed", agreementAccepted: true, agreementAcceptedAt: serverTimestamp()
+  });
+  currentApp.status = "agreement_signed";
+  $("refNo").textContent = currentId;
+  $("confirmMsg").textContent =
+    `Your financing agreement is signed. Your instalment of ${omr(p.emi)} per month for ${p.months} months has been registered.`;
+  show("confirm");
+};
+
+/* ---------- My applications ---------- */
+const STATUS = {
+  processing: { label: "Processing", badge: "b-processing" },
+  plan_selected: { label: "Awaiting signature", badge: "b-plan" },
+  agreement_signed: { label: "Agreement signed", badge: "b-signed" }
+};
+
+window.openMyApplications = async () => {
+  setAlert($("appsError"), "");
+  $("appsList").innerHTML = "<p class='muted'>Loading...</p>";
+  show("myApps");
+  try {
+    // Only this user's applications are returned (also enforced by Firestore rules)
+    const snap = await getDocs(query(APPS, where("uid", "==", currentUser.uid)));
+    if (snap.empty) {
+      $("appsList").innerHTML = "<p class='muted'>You have no applications yet.</p>";
+      return;
+    }
+    const items = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+    $("appsList").innerHTML = items.map(a => {
+      const s = STATUS[a.status] || STATUS.processing;
+      return `<div class="app-item">
+        <div>
+          <div class="app-title">${esc(a.product)} ${esc(a.model)}</div>
+          <div class="app-meta">${omr(a.price)} · ID ${esc(a.customerId)}</div>
+          <span class="badge ${s.badge}">${s.label}</span>
+        </div>
+        <button class="btn btn-secondary btn-small" onclick="resumeApp('${a.id}')">Open</button>
+      </div>`;
+    }).join("");
+  } catch (e) {
+    setAlert($("appsError"), "Could not load applications: " + e.message);
+    $("appsList").innerHTML = "";
+  }
+};
+
+window.resumeApp = async id => {
+  const snap = await getDoc(doc(db, "applications", id));
+  if (!snap.exists()) return;
+  const a = snap.data();
+  currentId = id;
+  currentApp = { ...a };
+  selectedIndex = a.plans && a.selectedPlan ? a.plans.findIndex(p => p.months === a.selectedPlan.months) : null;
+
+  if (a.status === "agreement_signed") {
+    $("refNo").textContent = id;
+    $("confirmMsg").textContent =
+      `Your financing agreement is signed. Instalment ${omr(a.selectedPlan.emi)} per month for ${a.selectedPlan.months} months.`;
+    show("confirm");
+  } else if (a.status === "plan_selected") {
+    openAgreement(a.selectedPlan);
+  } else {
+    show("plans");
+    renderPlans(currentApp, currentId);
+  }
+};
+</script>
+</body>
+</html>
