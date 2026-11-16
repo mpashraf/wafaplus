@@ -357,15 +357,79 @@
   .pw-toggle svg { width: 20px; height: 20px; }
 
   /* ---------- Applications ---------- */
-  .app-item {
-    border: 1.5px solid var(--border); border-radius: 14px; padding: 14px 16px; margin-top: 12px;
-    display: flex; justify-content: space-between; align-items: center; gap: 12px; background: #fff;
+  /* ---------- Filter drawer (mobile bottom sheet) ---------- */
+  .apps-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+  .apps-head h2 { margin: 0; }
+  .icon-btn {
+    position: relative; width: 42px; height: 42px; flex-shrink: 0; margin: 0; padding: 0;
+    display: grid; place-items: center; border: 0; border-radius: 12px; cursor: pointer;
+    background: var(--primary-soft); color: var(--primary);
   }
-  .app-title { font-weight: 700; margin-bottom: 2px; }
-  .app-meta { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+  .icon-btn:active { background: #d3e8e2; }
+  .icon-btn svg { width: 20px; height: 20px; }
+  .icon-badge {
+    position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px; padding: 0 5px;
+    border-radius: 9px; background: var(--primary); color: #fff; border: 2px solid #fff;
+    font-size: 11px; font-weight: 700; line-height: 14px; text-align: center;
+  }
+  .drawer-overlay {
+    position: fixed; inset: 0; z-index: 40;
+    background: rgba(16,40,33,.45);
+    animation: fadeIn .2s ease;
+  }
+  .drawer {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: min(100%, 560px); z-index: 41;
+    background: #fff; border-radius: 20px 20px 0 0;
+    box-shadow: 0 -8px 30px rgba(16,40,33,.18);
+    padding: 8px 18px calc(18px + env(safe-area-inset-bottom, 0px));
+    animation: slideUp .25s ease;
+  }
+  .drawer-handle { width: 40px; height: 4px; border-radius: 4px; background: var(--border); margin: 4px auto 10px; }
+  .drawer-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .drawer-head h3 { margin: 0; font-size: 17px; }
+  .btn-close {
+    width: 34px; height: 34px; border: 0; border-radius: 10px; margin: 0;
+    background: var(--primary-soft); color: var(--primary); font-size: 14px; cursor: pointer;
+  }
+  .filter-opt {
+    width: 100%; min-height: 48px; margin: 0 0 8px; padding: 10px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fff; color: var(--text); border: 1.5px solid var(--border); border-radius: 12px;
+    font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  .filter-opt .tick {
+    width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--border);
+    display: grid; place-items: center; font-size: 13px; color: #fff;
+  }
+  .filter-opt.selected { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); }
+  .filter-opt.selected .tick { background: var(--primary); border-color: var(--primary); }
+  .drawer-actions { display: grid; grid-template-columns: 1fr 1.6fr; gap: 10px; margin-top: 12px; }
+  .drawer-actions .btn { margin: 0; width: 100%; }
+  @keyframes slideUp { from { transform: translate(-50%, 100%); } to { transform: translate(-50%, 0); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* Compact application cards: one standard row per application */
+  #appsList { display: flex; flex-direction: column; gap: 8px; }
+  .app-item {
+    border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; background: #fff;
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px;
+  }
+  .app-main { min-width: 0; }
+  .app-title {
+    font-weight: 700; font-size: 15px; line-height: 1.3;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .app-meta {
+    font-size: 12px; color: var(--muted); line-height: 1.3; margin-top: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .app-side { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .app-side .badge { font-size: 11px; padding: 3px 9px; white-space: nowrap; }
+  .app-open { min-height: 34px; padding: 6px 12px; font-size: 13px; margin: 0; }
   @media (max-width: 480px) {
-    .app-item { flex-direction: column; align-items: stretch; }
-    .app-item .btn { width: 100%; }
+    .app-item { padding: 9px 10px; gap: 8px; }
+    .app-side { gap: 6px; }
     .account-email { display: none; }
   }
 </style>
@@ -519,9 +583,6 @@
     <button id="processBtn" class="btn btn-primary" onclick="processPlan()">Process</button>
   </div>
   <p class="plans-note">Conditions: minimum 20% downpayment · age at end of tenure ≤ 60 · EMI ≤ 60% of monthly income.</p>
-  <div class="actions">
-    <button class="btn btn-secondary" onclick="show('home')">Back to home</button>
-  </div>
 </section>
 
 <!-- AGREEMENT -->
@@ -555,13 +616,15 @@
 
 <!-- MY APPLICATIONS -->
 <section id="myApps" class="card hidden">
-  <h2>My applications</h2>
-  <p class="lead">Your quotations and financing requests.</p>
+  <div class="apps-head">
+    <h2>My applications</h2>
+    <button class="icon-btn" aria-label="Filter applications" title="Filter" onclick="openFilter()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg>
+      <span class="icon-badge hidden" id="filterCount"></span>
+    </button>
+  </div>
   <p id="appsError" class="alert alert-error hidden"></p>
   <div id="appsList"></div>
-  <div class="actions">
-    <button class="btn btn-secondary" onclick="show('home')">Back to home</button>
-  </div>
 </section>
 
 </main>
@@ -581,6 +644,21 @@
     <span>My apps</span>
   </button>
 </nav>
+
+<!-- FILTER DRAWER -->
+<div class="drawer-overlay hidden" id="filterOverlay" onclick="closeFilter()"></div>
+<aside class="drawer hidden" id="filterDrawer" role="dialog" aria-modal="true" aria-labelledby="filterTitle">
+  <div class="drawer-handle"></div>
+  <div class="drawer-head">
+    <h3 id="filterTitle">Filter by status</h3>
+    <button class="btn-close" onclick="closeFilter()" aria-label="Close">✕</button>
+  </div>
+  <div id="filterOptions"></div>
+  <div class="drawer-actions">
+    <button class="btn btn-secondary" onclick="resetFilter()">Clear</button>
+    <button class="btn btn-primary" onclick="applyFilter()">Show results</button>
+  </div>
+</aside>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -949,6 +1027,16 @@ const STATUS = {
   agreement_signed: { label: "Agreement signed", badge: "b-signed" }
 };
 
+// Status filter: an empty set means "show all"
+const FILTER_OPTIONS = [
+  { value: "processing", label: "Processing" },
+  { value: "plan_selected", label: "Awaiting signature" },
+  { value: "agreement_signed", label: "Agreement signed" }
+];
+let allApps = [];
+let statusFilter = new Set();
+let pendingFilter = new Set();
+
 window.openMyApplications = async () => {
   setAlert($("appsError"), "");
   $("appsList").innerHTML = "<p class='muted'>Loading...</p>";
@@ -956,29 +1044,82 @@ window.openMyApplications = async () => {
   try {
     // Only this user's applications are returned (also enforced by Firestore rules)
     const snap = await getDocs(query(APPS, where("uid", "==", currentUser.uid)));
-    if (snap.empty) {
-      $("appsList").innerHTML = "<p class='muted'>You have no applications yet.</p>";
-      return;
-    }
-    const items = snap.docs
+    allApps = snap.docs
       .map(d => ({ id: d.id, ...d.data() }))
       .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-
-    $("appsList").innerHTML = items.map(a => {
-      const s = STATUS[a.status] || STATUS.processing;
-      return `<div class="app-item">
-        <div>
-          <div class="app-title">${esc(a.product)} ${esc(a.model)}</div>
-          <div class="app-meta">${omr(a.price)} · ID ${esc(a.customerId)}</div>
-          <span class="badge ${s.badge}">${s.label}</span>
-        </div>
-        <button class="btn btn-secondary btn-small" onclick="resumeApp('${a.id}')">Open</button>
-      </div>`;
-    }).join("");
+    renderApps();
   } catch (e) {
     setAlert($("appsError"), "Could not load applications: " + e.message);
     $("appsList").innerHTML = "";
   }
+};
+
+function renderApps() {
+  const activeCount = statusFilter.size;
+  $("filterCount").textContent = activeCount;
+  $("filterCount").classList.toggle("hidden", !activeCount);
+
+  if (!allApps.length) {
+    $("appsList").innerHTML = "<p class='muted'>You have no applications yet.</p>";
+    return;
+  }
+  const items = statusFilter.size ? allApps.filter(a => statusFilter.has(a.status)) : allApps;
+  if (!items.length) {
+    $("appsList").innerHTML = "<p class='muted'>No applications match this filter.</p>";
+    return;
+  }
+
+  $("appsList").innerHTML = items.map(a => {
+    const s = STATUS[a.status] || STATUS.processing;
+    return `<div class="app-item">
+      <div class="app-main">
+        <div class="app-title">${esc(a.product)} ${esc(a.model)}</div>
+        <div class="app-meta">${omr(a.price)} · ID ${esc(a.customerId)}</div>
+      </div>
+      <div class="app-side">
+        <span class="badge ${s.badge}">${s.label}</span>
+        <button class="btn btn-secondary app-open" onclick="resumeApp('${a.id}')">Open</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// Filter drawer
+window.openFilter = () => {
+  pendingFilter = new Set(statusFilter);
+  renderFilterOptions();
+  $("filterOverlay").classList.remove("hidden");
+  $("filterDrawer").classList.remove("hidden");
+};
+
+window.closeFilter = () => {
+  $("filterOverlay").classList.add("hidden");
+  $("filterDrawer").classList.add("hidden");
+};
+
+function renderFilterOptions() {
+  $("filterOptions").innerHTML = FILTER_OPTIONS.map(o => {
+    const on = pendingFilter.has(o.value);
+    return `<button class="filter-opt ${on ? "selected" : ""}" onclick="toggleFilterOption('${o.value}')">
+      <span>${o.label}</span><span class="tick">${on ? "✓" : ""}</span>
+    </button>`;
+  }).join("");
+}
+
+window.toggleFilterOption = value => {
+  pendingFilter.has(value) ? pendingFilter.delete(value) : pendingFilter.add(value);
+  renderFilterOptions();
+};
+
+window.resetFilter = () => {
+  pendingFilter.clear();
+  renderFilterOptions();
+};
+
+window.applyFilter = () => {
+  statusFilter = new Set(pendingFilter);
+  closeFilter();
+  renderApps();
 };
 
 window.resumeApp = async id => {
