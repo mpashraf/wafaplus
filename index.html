@@ -263,6 +263,9 @@
   .tab svg { width: 22px; height: 22px; }
   .tab.active { color: var(--primary); background: var(--primary-soft); }
   body.has-tabbar main { padding-bottom: 110px; }
+  /* Sticky action buttons sit above the bottom menu, not behind it */
+  body.has-tabbar .sticky-action { bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+  body.has-tabbar .process-bar { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
 
   /* ---------- Header back arrow ---------- */
   .back-btn {
@@ -707,7 +710,9 @@ const STEP_OF = { quoteForm: 0, plans: 1, agreement: 2, confirm: 3 };
 const BACK_TARGET = { quoteForm: "home", plans: "home", agreement: "plans", confirm: "home", myApps: "home" };
 let activeScreen = null;
 // Screens that show the bottom menu (form and agreement screens keep their own bottom action)
-const TAB_SCREENS = ["home", "myApps"];
+const TAB_SCREENS = ["home", "quoteForm", "plans", "agreement", "confirm", "myApps"];
+// Which menu item stays highlighted for screens inside the quotation flow
+const TAB_ACTIVE = { plans: "quoteForm", agreement: "quoteForm", confirm: "home" };
 
 const show = id => {
   SECTIONS.forEach(s => $(s).classList.toggle("hidden", s !== id));
@@ -716,7 +721,8 @@ const show = id => {
   const showTabs = TAB_SCREENS.includes(id);
   $("tabbar").classList.toggle("hidden", !showTabs);
   document.body.classList.toggle("has-tabbar", showTabs);
-  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.screen === id));
+  const tabKey = TAB_ACTIVE[id] || id;
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.screen === tabKey));
   const step = STEP_OF[id];
   $("stepper").classList.toggle("hidden", step === undefined);
   if (step !== undefined) {
