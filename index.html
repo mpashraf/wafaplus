@@ -243,6 +243,67 @@
   }
   .center { text-align: center; }
 
+  /* ---------- Compact financing options screen ---------- */
+  .plans-screen { padding: 18px; margin-bottom: 0; }
+  .plans-screen h2 { font-size: 20px; margin-bottom: 10px; }
+  .plans-screen .summary-bar { padding: 8px 12px; margin-bottom: 12px; font-size: 13px; }
+  #plansTable { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  #plansTable > .alert { grid-column: 1 / -1; margin: 0; }
+  .plans-screen .plan {
+    margin: 0; padding: 12px; border-radius: 12px;
+    display: flex; flex-direction: column;
+  }
+  .plans-screen .plan-head { margin-bottom: 8px; gap: 6px; }
+  .plans-screen .plan-tenure { font-size: 15px; }
+  .plans-screen .plan-head .muted { font-size: 12px; }
+  .plans-screen .plan-emi { font-size: 17px; }
+  .plans-screen .plan-emi span { font-size: 11px; }
+  .plans-screen .plan-meta { grid-template-columns: 1fr 1fr; gap: 4px 8px; margin: 0 0 10px; }
+  .plans-screen .plan-meta dt { font-size: 11px; }
+  .plans-screen .plan-meta dd { font-size: 13px; }
+  .plans-screen .plan .btn { min-height: 38px; padding: 7px 10px; font-size: 14px; margin-top: auto; }
+  .plans-screen .plan .reason { font-size: 12px; margin-top: auto; }
+  .plans-screen .plans-note { font-size: 12px; color: var(--muted); margin: 10px 0 0; }
+  .plans-screen .actions { margin-top: 12px; }
+  .plans-screen .process-bar { margin-top: 10px; padding: 10px 12px; bottom: 8px; }
+  @media (max-width: 720px) {
+    #plansTable { grid-template-columns: 1fr; gap: 8px; }
+    .plans-screen .plan { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+    .plans-screen .plan-head { flex: 1 1 140px; margin: 0; }
+    .plans-screen .plan-meta { flex: 2 1 220px; margin: 0; }
+    .plans-screen .plan .btn, .plans-screen .plan .reason { flex: 1 1 100%; }
+    .plans-screen .plan .btn { margin-top: 0; }
+  }
+  @media (max-width: 480px) {
+    .plans-screen { padding: 14px; }
+    .plans-screen .plan-meta { grid-template-columns: 1fr 1fr; }
+    .plans-screen .plan-emi { font-size: 16px; }
+  }
+
+  /* ---------- Process bar ---------- */
+  .process-bar {
+    position: sticky; bottom: 12px; margin-top: 14px;
+    background: #fff; border: 1.5px solid var(--primary); border-radius: 14px;
+    padding: 12px 14px; box-shadow: var(--shadow);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .process-info { font-size: 14px; }
+  @media (max-width: 480px) {
+    .process-bar { flex-direction: column; align-items: stretch; }
+    .process-bar .btn { width: 100%; }
+  }
+
+  /* ---------- Password field ---------- */
+  .pw-wrap { position: relative; }
+  .pw-wrap input { padding-right: 52px; }
+  .pw-toggle {
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    width: 40px; height: 40px; border: 0; border-radius: 10px; background: transparent;
+    color: var(--muted); cursor: pointer; display: grid; place-items: center; padding: 0; margin: 0;
+  }
+  .pw-toggle:hover { background: var(--primary-soft); color: var(--primary); }
+  .pw-toggle svg { width: 20px; height: 20px; }
+
   /* ---------- Applications ---------- */
   .app-item {
     border: 1.5px solid var(--border); border-radius: 14px; padding: 14px 16px; margin-top: 12px;
@@ -306,12 +367,19 @@
       </div>
       <div class="field">
         <label for="authPassword">Password</label>
-        <input id="authPassword" type="password" autocomplete="current-password" placeholder="••••••••">
+        <div class="pw-wrap">
+          <input id="authPassword" type="password" autocomplete="current-password" placeholder="••••••••">
+          <button type="button" class="pw-toggle" id="pwToggle" aria-label="Show password" title="Show password" onclick="togglePassword()"></button>
+        </div>
       </div>
       <div class="field hidden" id="confirmWrap">
         <label for="authPassword2">Confirm password</label>
         <input id="authPassword2" type="password" autocomplete="new-password" placeholder="••••••••">
       </div>
+      <label class="check" style="margin-top:4px" id="rememberWrap">
+        <input type="checkbox" id="rememberMe">
+        <span>Remember me on this device</span>
+      </label>
       <p id="authError" class="alert alert-error hidden"></p>
       <p id="authInfo" class="alert alert-info hidden"></p>
       <button id="authBtn" class="btn btn-primary btn-block" style="margin-top:6px" onclick="doAuth()">Sign in</button>
@@ -386,15 +454,18 @@
 </section>
 
 <!-- PLANS -->
-<section id="plans" class="card hidden">
+<section id="plans" class="card plans-screen hidden">
   <h2>Financing options</h2>
-  <p class="lead">Choose the plan that fits your budget.</p>
   <div class="summary-bar">
     <span>Status: <span class="badge b-processing">Processing</span></span>
     <span class="muted" id="plansSummary"></span>
   </div>
   <div id="plansTable"></div>
-  <p class="muted" style="margin-top:14px">Conditions: minimum 20% downpayment · age at end of tenure ≤ 60 · EMI ≤ 60% of monthly income.</p>
+  <div id="processBar" class="process-bar hidden">
+    <div id="processInfo" class="process-info"></div>
+    <button id="processBtn" class="btn btn-primary" onclick="processPlan()">Process</button>
+  </div>
+  <p class="plans-note">Conditions: minimum 20% downpayment · age at end of tenure ≤ 60 · EMI ≤ 60% of monthly income.</p>
   <div class="actions">
     <button class="btn btn-secondary" onclick="show('home')">Back to home</button>
   </div>
@@ -409,11 +480,11 @@
   <div class="agreement-text" id="agreementText"></div>
   <label class="check">
     <input type="checkbox" id="acceptBox" onchange="document.getElementById('acceptBtn').disabled = !this.checked">
-    <span>I have read and accept this Murabaha financing agreement.</span>
+    <span>I have read and accept this instalment sale agreement.</span>
   </label>
   <div class="actions">
     <button id="acceptBtn" class="btn btn-primary" disabled onclick="acceptAgreement()">Sign and accept</button>
-    <button class="btn btn-secondary" onclick="show('plans')">Back to options</button>
+    <button class="btn btn-secondary" onclick="backToPlans()">Back to options</button>
   </div>
 </section>
 
@@ -449,7 +520,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {
   getAuth, onAuthStateChanged, createUserWithEmailAndPassword,
-  signInWithEmailAndPassword, signOut, sendPasswordResetEmail
+  signInWithEmailAndPassword, signOut, sendPasswordResetEmail,
+  setPersistence, browserLocalPersistence, browserSessionPersistence
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 /* ---------- Firebase ---------- */
@@ -473,8 +545,8 @@ const POLICY = {
   minDownPct: 20,
   maxAge: 60,
   maxDbr: 0.60,
-  // tenure in months -> annual profit rate (Murabaha markup, flat, agreed upfront)
-  tenures: { 3: 5, 6: 6, 12: 9 }
+  // instalment tenures in months (no profit: instalment = financed amount ÷ months)
+  tenures: [3, 6, 12]
 };
 
 /* ---------- Helpers ---------- */
@@ -545,9 +617,13 @@ window.doAuth = async () => {
   try {
     if (authMode === "register") {
       if (password !== $("authPassword2").value) return setAlert($("authError"), "Passwords do not match.");
+      await setPersistence(auth, $("rememberMe").checked ? browserLocalPersistence : browserSessionPersistence);
       await createUserWithEmailAndPassword(auth, email, password);
     } else {
+      await setPersistence(auth, $("rememberMe").checked ? browserLocalPersistence : browserSessionPersistence);
       await signInWithEmailAndPassword(auth, email, password);
+      if ($("rememberMe").checked) localStorage.setItem("wafaplus_email", email);
+      else localStorage.removeItem("wafaplus_email");
     }
   } catch (e) {
     setAlert($("authError"), authErrorText(e.code));
@@ -569,6 +645,26 @@ window.doReset = async () => {
 window.doLogout = async () => {
   await signOut(auth);
 };
+
+const EYE_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const EYE_OFF_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-7 0-11-7-11-7a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19M1 1l22 22"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/></svg>`;
+
+window.togglePassword = () => {
+  const input = $("authPassword");
+  const btn = $("pwToggle");
+  const showing = input.type === "text";
+  input.type = showing ? "password" : "text";
+  btn.innerHTML = showing ? EYE_ICON : EYE_OFF_ICON;
+  btn.setAttribute("aria-label", showing ? "Show password" : "Hide password");
+  btn.title = showing ? "Show password" : "Hide password";
+};
+
+// Restore remembered email and checkbox state
+$("pwToggle").innerHTML = EYE_ICON;
+if (localStorage.getItem("wafaplus_email")) {
+  $("authEmail").value = localStorage.getItem("wafaplus_email");
+  $("rememberMe").checked = true;
+}
 
 // Runs on initial load and whenever sign-in state changes
 onAuthStateChanged(auth, user => {
@@ -593,22 +689,22 @@ function buildPlans(price, downPayment, age, income) {
   const down = r3(downPayment);
   const financed = r3(price - down);
 
-  for (const [m, ratePct] of Object.entries(POLICY.tenures)) {
-    const months = Number(m);
-    const profit = r3(financed * (ratePct / 100) * (months / 12)); // flat profit
-    const total = r3(financed + profit);
-    const emi = r3(total / months);
+  for (const months of POLICY.tenures) {
+    const total = financed;                // no profit: total payable equals financed amount
+    const emi = r3(financed / months);     // equal monthly instalments
 
     const reasons = [];
     if (age + months / 12 > POLICY.maxAge) reasons.push("Age at end of tenure exceeds 60");
     if (emi > income * POLICY.maxDbr) reasons.push("EMI exceeds 60% of monthly income");
 
-    plans.push({ dp, months, down, financed, profit, total, emi, eligible: reasons.length === 0, reasons });
+    plans.push({ dp, months, down, financed, total, emi, eligible: reasons.length === 0, reasons });
   }
   return plans.sort((a, b) => a.months - b.months);
+  // Each plan: { dp, months, down, financed, total, emi, eligible, reasons }
 }
 
 function renderPlans(app, appId) {
+  updateProcessBar(app);
   const eligible = app.plans.filter(p => p.eligible).length;
   $("plansSummary").innerHTML = `Ref <b>${esc(appId)}</b> · ${eligible} option(s) available`;
 
@@ -631,11 +727,11 @@ function renderPlans(app, appId) {
       <dl class="plan-meta">
         <div><dt>Downpayment</dt><dd>${omr(p.down)}</dd></div>
         <div><dt>Financed</dt><dd>${omr(p.financed)}</dd></div>
-        <div><dt>Profit</dt><dd>${omr(p.profit)}</dd></div>
+        <div><dt>Instalments</dt><dd>${p.months} × ${omr(p.emi)}</dd></div>
         <div><dt>Total payable</dt><dd>${omr(p.total)}</dd></div>
       </dl>
       ${p.eligible
-        ? `<button class="btn btn-primary btn-block" onclick="selectPlan(${i})">${isSelected ? "Continue with this plan" : "Select this plan"}</button>`
+        ? `<button class="btn btn-primary btn-block" onclick="selectPlan(${i})">${isSelected ? "Selected ✓" : "Select this plan"}</button>`
         : `<p class="reason">${esc(p.reasons.join(" · "))}</p>`}
     </div>`;
   }).join("");
@@ -686,15 +782,40 @@ window.submitQuotation = async () => {
 };
 
 /* ---------- Select plan & agreement ---------- */
-window.selectPlan = async i => {
+// Selecting a plan only highlights it; nothing is saved until the customer presses Process
+window.selectPlan = i => {
   selectedIndex = i;
-  const p = currentApp.plans[i];
-  await updateDoc(doc(db, "applications", currentId), {
-    status: "plan_selected", selectedPlan: p, planSelectedAt: serverTimestamp()
-  });
-  currentApp.status = "plan_selected";
-  currentApp.selectedPlan = p;
-  openAgreement(p);
+  currentApp.selectedPlan = currentApp.plans[i];
+  renderPlans(currentApp, currentId);
+};
+
+function updateProcessBar(app) {
+  const p = app.selectedPlan;
+  $("processBar").classList.toggle("hidden", !p);
+  if (p) $("processInfo").innerHTML = `<b>${p.months} months</b> · ${omr(p.emi)} per month · Downpayment ${omr(p.down)}`;
+}
+
+// Process: save the chosen plan and move to the agreement
+window.processPlan = async () => {
+  if (!currentApp.selectedPlan) return;
+  $("processBtn").disabled = true;
+  try {
+    await updateDoc(doc(db, "applications", currentId), {
+      status: "plan_selected", selectedPlan: currentApp.selectedPlan, planSelectedAt: serverTimestamp()
+    });
+    currentApp.status = "plan_selected";
+    openAgreement(currentApp.selectedPlan);
+  } catch (e) {
+    alert("Could not process the plan: " + e.message);
+  } finally {
+    $("processBtn").disabled = false;
+  }
+};
+
+// Back from the agreement: return to the plans with the selection kept
+window.backToPlans = () => {
+  show("plans");
+  renderPlans(currentApp, currentId);
 };
 
 function openAgreement(p) {
@@ -704,15 +825,14 @@ function openAgreement(p) {
       <div class="summary-item"><span>Original price</span><span>${omr(currentApp.price)}</span></div>
       <div class="summary-item"><span>Downpayment</span><span>${omr(p.down)}</span></div>
       <div class="summary-item"><span>Financed amount</span><span>${omr(p.financed)}</span></div>
-      <div class="summary-item"><span>Fixed profit</span><span>${omr(p.profit)}</span></div>
       <div class="summary-item"><span>Total payable</span><span>${omr(p.total)}</span></div>
       <div class="summary-item"><span>Tenure</span><span>${p.months} months</span></div>
       <div class="summary-item total"><span>Monthly instalment</span><span>${omr(p.emi)}</span></div>
     </div>`;
   $("agreementText").innerHTML = `
     <p><b>MURABAHA FINANCING AGREEMENT</b></p>
-    <p>1. The Company purchases the item described above and sells it to the Customer at the Total Payable amount, which includes a fixed, pre-agreed profit margin.</p>
-    <p>2. The profit amount is fixed at contract signing and will not change or compound due to delay in payment.</p>
+    <p>1. The Company sells the item described above to the Customer on instalment terms. The Total Payable equals the original price less the downpayment, with no additional profit or markup.</p>
+    <p>2. The instalment amount is fixed at contract signing and will not be increased due to delay in payment.</p>
     <p>3. The Customer pays the downpayment at signing, and the monthly instalment on the agreed date for the full tenure.</p>
     <p>4. Ownership of the item remains with the Company until the Total Payable is fully settled.</p>
     <p>5. No interest (riba) is charged. Late payments are not subject to interest; any charity amount collected on late payment is donated to charity and not retained as income.</p>
