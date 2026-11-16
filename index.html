@@ -243,6 +243,37 @@
   }
   .center { text-align: center; }
 
+  /* ---------- Header back arrow ---------- */
+  .back-btn {
+    width: 40px; height: 40px; border: 0; border-radius: 12px; flex-shrink: 0;
+    background: rgba(255,255,255,.14); color: #fff; cursor: pointer;
+    display: grid; place-items: center; padding: 0; margin: 0 2px 0 -6px;
+  }
+  .back-btn:active { background: rgba(255,255,255,.26); }
+  .back-btn svg { width: 22px; height: 22px; }
+
+  /* ---------- Compact app-style quotation form ---------- */
+  .quote-screen { padding: 16px 18px 0; margin-bottom: 0; }
+  .quote-screen h2 { font-size: 20px; margin-bottom: 2px; }
+  .quote-screen .section-title { margin: 12px 0 6px; font-size: 12px; }
+  .quote-screen .field { margin-bottom: 10px; }
+  .quote-screen .field label { font-size: 13px; margin-bottom: 4px; }
+  .quote-screen .field .hint { font-size: 11px; margin-top: 2px; }
+  .quote-screen input, .quote-screen select {
+    min-height: 42px; padding: 9px 12px; border-radius: 10px;
+  }
+  .quote-screen .grid-2 { gap: 0 12px; }
+  @media (max-width: 600px) {
+    .quote-screen .grid-2 { grid-template-columns: 1fr 1fr; }
+  }
+  .sticky-action {
+    position: sticky; bottom: 0; z-index: 5;
+    margin: 12px -18px 0; padding: 12px 18px calc(12px + env(safe-area-inset-bottom, 0px));
+    background: #fff; border-top: 1px solid var(--border);
+    border-radius: 0 0 var(--radius) var(--radius);
+  }
+  .sticky-action .btn { width: 100%; }
+
   /* ---------- Compact financing options screen ---------- */
   .plans-screen { padding: 18px; margin-bottom: 0; }
   .plans-screen h2 { font-size: 20px; margin-bottom: 10px; }
@@ -322,6 +353,9 @@
 
 <header class="topbar" id="topbar">
   <div class="topbar-inner">
+    <button class="back-btn hidden" id="backBtn" aria-label="Back" onclick="goBack()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
     <div class="brand">
       <div class="brand-mark">W</div>
       <div>
@@ -413,9 +447,8 @@
 </section>
 
 <!-- QUOTATION FORM -->
-<section id="quoteForm" class="card hidden">
+<section id="quoteForm" class="card quote-screen hidden">
   <h2>Quotation request</h2>
-  <p class="lead">Tell us about the item and your details. Maximum price is 50,000 OMR.</p>
 
   <div class="section-title">Personal details</div>
   <div class="grid-2">
@@ -447,9 +480,8 @@
   <div class="field"><label for="description">Description (optional)</label><input id="description"></div>
 
   <p id="formError" class="alert alert-error hidden"></p>
-  <div class="actions">
+  <div class="sticky-action">
     <button class="btn btn-primary" onclick="submitQuotation()">Submit quotation</button>
-    <button class="btn btn-secondary" onclick="show('home')">Cancel</button>
   </div>
 </section>
 
@@ -556,9 +588,14 @@ const omr = n => Number(n).toFixed(3) + " OMR";
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const SECTIONS = ["loading","login","home","quoteForm","plans","agreement","confirm","myApps"];
 const STEP_OF = { quoteForm: 0, plans: 1, agreement: 2, confirm: 3 };
+// Where the header back arrow goes from each screen (screens not listed have no back arrow)
+const BACK_TARGET = { quoteForm: "home", plans: "home", agreement: "plans", confirm: "home", myApps: "home" };
+let activeScreen = null;
 
 const show = id => {
   SECTIONS.forEach(s => $(s).classList.toggle("hidden", s !== id));
+  activeScreen = id;
+  $("backBtn").classList.toggle("hidden", !BACK_TARGET[id]);
   const step = STEP_OF[id];
   $("stepper").classList.toggle("hidden", step === undefined);
   if (step !== undefined) {
@@ -816,6 +853,12 @@ window.processPlan = async () => {
 window.backToPlans = () => {
   show("plans");
   renderPlans(currentApp, currentId);
+};
+
+// Header back arrow
+window.goBack = () => {
+  if (activeScreen === "agreement") return backToPlans();
+  show(BACK_TARGET[activeScreen] || "home");
 };
 
 function openAgreement(p) {
