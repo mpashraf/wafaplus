@@ -243,6 +243,25 @@
   }
   .center { text-align: center; }
 
+  /* ---------- Bottom menu (fixed) ---------- */
+  .tabbar {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: min(100%, 560px); z-index: 20;
+    background: #fff; border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 16px rgba(16,40,33,.07);
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+    padding: 6px 10px calc(6px + env(safe-area-inset-bottom, 0px));
+  }
+  .tab {
+    background: none; border: 0; margin: 0; padding: 6px 0; min-height: 56px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    color: var(--muted); font-family: inherit; font-size: 12px; font-weight: 600;
+    border-radius: 12px; cursor: pointer;
+  }
+  .tab svg { width: 22px; height: 22px; }
+  .tab.active { color: var(--primary); background: var(--primary-soft); }
+  body.has-tabbar main { padding-bottom: 110px; }
+
   /* ---------- Header back arrow ---------- */
   .back-btn {
     width: 40px; height: 40px; border: 0; border-radius: 12px; flex-shrink: 0;
@@ -545,6 +564,22 @@
 
 </main>
 
+<!-- BOTTOM MENU -->
+<nav class="tabbar hidden" id="tabbar" aria-label="Main menu">
+  <button class="tab" data-screen="home" onclick="show('home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+    <span>Home</span>
+  </button>
+  <button class="tab" data-screen="quoteForm" onclick="show('quoteForm')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+    <span>New quote</span>
+  </button>
+  <button class="tab" data-screen="myApps" onclick="openMyApplications()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+    <span>My apps</span>
+  </button>
+</nav>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -591,11 +626,17 @@ const STEP_OF = { quoteForm: 0, plans: 1, agreement: 2, confirm: 3 };
 // Where the header back arrow goes from each screen (screens not listed have no back arrow)
 const BACK_TARGET = { quoteForm: "home", plans: "home", agreement: "plans", confirm: "home", myApps: "home" };
 let activeScreen = null;
+// Screens that show the bottom menu (form and agreement screens keep their own bottom action)
+const TAB_SCREENS = ["home", "myApps"];
 
 const show = id => {
   SECTIONS.forEach(s => $(s).classList.toggle("hidden", s !== id));
   activeScreen = id;
   $("backBtn").classList.toggle("hidden", !BACK_TARGET[id]);
+  const showTabs = TAB_SCREENS.includes(id);
+  $("tabbar").classList.toggle("hidden", !showTabs);
+  document.body.classList.toggle("has-tabbar", showTabs);
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.screen === id));
   const step = STEP_OF[id];
   $("stepper").classList.toggle("hidden", step === undefined);
   if (step !== undefined) {
